@@ -294,80 +294,96 @@ Module(
     desc: "Displays the bot command menu.",
   },
   async (message, match) => {
-    const stars = ["✦", "✯", "✯", "✰", "◬"];
+    const stars = ["✦", "✯", "✰", "◬"];
     const star = stars[Math.floor(Math.random() * stars.length)];
 
-    let use_ = commands.map((e) => e.use);
-    const others = (use) => {
-      return use === "" ? "others" : use;
-    };
     let types = [
       ...new Set(
-        commands.filter((e) => e.pattern).map((e) => e.use || "General")
+        commands
+          .filter((e) => e.pattern)
+          .map((e) => e.use || "General")
       ),
     ];
 
     let cmd_obj = {};
+
     for (const command of commands) {
       let type_det = command.use || "General";
-      if (!cmd_obj[type_det]?.length) cmd_obj[type_det] = [];
+
+      if (!cmd_obj[type_det]) {
+        cmd_obj[type_det] = [];
+      }
+
       let cmd_name = extractCommandName(command.pattern);
-      if (cmd_name) cmd_obj[type_det].push(cmd_name);
+
+      if (cmd_name) {
+        cmd_obj[type_det].push(cmd_name);
+      }
     }
 
     let final = "";
     let i = 0;
-    const handlerPrefix = HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+
+    const handlerPrefix =
+      HANDLERS !== "false" ? HANDLERS.split("")[0] : "";
+
     for (const n of types) {
+      const newn = n.charAt(0).toUpperCase() + n.slice(1);
+
+      final += `\n╭━━━〔 *${newn}* 〕━━━╮`;
+
       for (const x of cmd_obj[n]) {
-        i = i + 1;
-        const newn = n.charAt(0).toUpperCase() + n.slice(1);
-        final += `${
-          final.includes(newn) ? "" : "\n\n╭════〘 *_`" + newn + "`_* 〙════⊷❍"
-        }\n┃${star}│ _\`${i}.\` ${handlerPrefix}${x.trim()}_${
-          cmd_obj[n]?.indexOf(x) === cmd_obj[n]?.length - 1
-            ? `\n┃${star}╰─────────────────❍\n╰══════════════════⊷❍`
-            : ""
-        }`;
+        i++;
+
+        final += `\n┃ ${star} \`${i}.\` ${handlerPrefix}${x.trim()}`;
       }
+
+      final += `\n╰━━━━━━━━━━━━━━━━━━╯`;
     }
 
-    let cmdmenu = final.trim();
+    const cmdmenu = final.trim();
+
     const used = bytesToSize(os.freemem());
     const total = bytesToSize(os.totalmem());
     const totalUsers = await getTotalUserCount();
+
     const infoParts = config.BOT_INFO.split(";");
+
     const botName = infoParts[0] || "My Bot";
     const botOwner = infoParts[1] || "N/A";
     const botVersion = VERSION;
+
     let botImageLink = infoParts[2] || "";
+
     if (botImageLink === "default") {
-      botImageLink = path.join(__dirname, "utils", "images", "default.png");
+      botImageLink = path.join(
+        __dirname,
+        "utils",
+        "images",
+        "default.png"
+      );
     }
 
-    const menu = `╭═══〘 \`${botName}\` 〙═══⊷❍
-┃${star}╭──────────────
-┃${star}│
-┃${star}│ _*\`Owner\`*_ : ${botOwner}
-┃${star}│ _*\`User\`*_ : ${message.senderName.replace(/[\r\n]+/gm, "")}
-┃${star}│ _*\`Mode\`*_ : ${MODE}
-┃${star}│ _*\`Server\`*_ : ${os.platform() === "linux" ? "Linux" : "Unknown OS"}
-┃${star}│ _*\`Available RAM\`*_ : ${used} of ${total}
-┃${star}│ _*\`Total Users\`*_ : ${totalUsers}
-┃${star}│ _*\`Version\`*_ : ${botVersion}
-┃${star}│
-┃${star}│
-┃${star}│  ▎▍▌▌▉▏▎▌▉▐▏▌▎
-┃${star}│  ▎▍▌▌▉▏▎▌▉▐▏▌▎
-┃${star}│   ${botName}
-┃${star}│
-┃${star}╰───────────────
-╰═════════════════⊷
+    const menu = `╭━━━〔 *${botName}* 〕━━━╮
+┃
+┃ ${star} *Owner* : ${botOwner}
+┃ ${star} *User*  : ${message.senderName.replace(/[\r\n]+/gm, "")}
+┃ ${star} *Mode*  : ${MODE}
+┃ ${star} *OS*    : ${
+      os.platform() === "linux" ? "Linux" : "Unknown OS"
+    }
+┃ ${star} *RAM*   : ${used} / ${total}
+┃ ${star} *Users* : ${totalUsers}
+┃ ${star} *Version* : ${botVersion}
+┃
+╰━━━━━━━━━━━━━━━━━━╯
 
 ${cmdmenu}`;
+
     try {
       if (
-        botImageLink === path.join(__dirname, "utils", "images", "default.png")
+        botImageLink ===
+        path.join(__dirname, "utils", "images", "default.png")
       ) {
         await message.client.sendMessage(message.jid, {
           image: fs.readFileSync(botImageLink),
@@ -381,6 +397,7 @@ ${cmdmenu}`;
       }
     } catch (error) {
       console.error("Error sending menu:", error);
+
       await message.client.sendMessage(message.jid, {
         text: menu,
       });
