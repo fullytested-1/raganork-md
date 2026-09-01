@@ -75,12 +75,18 @@ Module(
       );
       const audioFile = await message.reply_message.download();
       const outputPath = getTempPath(`black_${Date.now()}.mp4`);
+      const imagePath = getTempPath(`black_${Date.now()}.png`);
+
+      // Black image undakkunnu (jimp use cheythu)
+      const Jimp = require("jimp");
+      const image = new Jimp(320, 240, 0x000000ff);
+      await image.writeAsync(imagePath);
 
       await new Promise((resolve, reject) => {
         ffmpeg()
+          .input(imagePath)
+          .inputOptions(["-loop", "1"])
           .input(audioFile)
-          .input("color=c=black:s=320x240:r=30")
-          .inputFormat("lavfi")
           .outputOptions([
             "-shortest",
             "-c:v",
@@ -90,7 +96,7 @@ Module(
             "-crf",
             "51",
             "-c:a",
-            "copy",
+            "aac",
             "-pix_fmt",
             "yuv420p",
           ])
@@ -109,6 +115,7 @@ Module(
       );
       if (fs.existsSync(audioFile)) fs.unlinkSync(audioFile);
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
     } catch (error) {
       console.error("Black video creation error:", error);
       await message.send("_Failed to create black video. Please try again._");
