@@ -13,7 +13,7 @@ WORKDIR /app
 COPY package.json ./
 COPY yarn.lock ./
 
-RUN npm install -g yarn pm2
+RUN npm install -g pm2
 RUN yarn install
 
 COPY . .
