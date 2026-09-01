@@ -1,8 +1,9 @@
 FROM node:22-alpine
 
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
     git \
     ffmpeg \
+    ffmpeg-libavfilter \
     libwebp-tools \
     python3 \
     make \
