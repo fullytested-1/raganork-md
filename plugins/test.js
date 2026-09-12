@@ -59,17 +59,3 @@ Module(
     return await m.sendReply("_" + TimeCalculator(age) + " remaining_");
   }
 );
-Module(
-  {
-    pattern: "ping",
-    use: "utility",
-    desc: "Measures ping",
-  },
-  async (message, match) => {
-    const start = process.hrtime();
-    let sent_msg = await message.sendReply("*❮ ᴛᴇsᴛɪɴɢ ᴘɪɴɢ ❯*");
-    const diff = process.hrtime(start);
-    const ms = (diff[0] * 1e3 + diff[1] / 1e6).toFixed(2);
-    await message.edit("*𝙻𝚊𝚝𝚎𝚗𝚌𝚢: " + ms + " _𝙼𝚂_*", message.jid, sent_msg.key);
-  }
-);
